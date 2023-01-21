@@ -1,11 +1,11 @@
 #include <iostream>
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <cmath>
 
-std::string get_word(std::vector<int32_t>& w, std::map<size_t,char>& alphabet);
+std::string get_word(std::vector<int32_t>& w, std::unordered_map<size_t,char>& alphabet);
 size_t get_diff_bit(int32_t l, int32_t r);
-void fill_alphabet(std::map<size_t,char>& alphabet);
+void fill_alphabet(std::unordered_map<size_t,char>& alphabet);
 
 int main(){
     size_t n;
@@ -13,15 +13,14 @@ int main(){
     std::vector<int32_t> in(n);
     for(auto &w: in) std::cin>>w;
 
-    std::map<size_t,char> alphabet;
+    std::unordered_map<size_t,char> alphabet;
     fill_alphabet(alphabet);
 
-    std::cout<<"---"<<get_word(in, alphabet);
-
+    std::cout<<get_word(in, alphabet);
 }
 
 
-std::string get_word(std::vector<int32_t>& w, std::map<size_t,char>& alphabet){
+std::string get_word(std::vector<int32_t>& w, std::unordered_map<size_t,char>& alphabet){
     std::string word;
     int32_t prev = 0;
     int32_t next;
@@ -34,7 +33,7 @@ std::string get_word(std::vector<int32_t>& w, std::map<size_t,char>& alphabet){
 }
 
 
-void fill_alphabet(std::map<size_t,char>& alphabet){
+void fill_alphabet(std::unordered_map<size_t,char>& alphabet){
     for(int bit = 0; bit <= 25; ++bit){
         alphabet[bit] = char(bit + 97);
     }
