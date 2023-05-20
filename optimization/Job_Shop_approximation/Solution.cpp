@@ -42,6 +42,7 @@ void Job_Shop_m_machines_2_jobs (const Detail& d1, const Detail& d2) {
                 ++i2;
             }
         }
+        
         res[step2.first][d2.id] = load[step2.first] - step2.second;
         res[step1.first][d1.id] = load[step1.first] - step1.second;
         t1 = load[step1.first], t2 = load[step2.first];
@@ -49,13 +50,9 @@ void Job_Shop_m_machines_2_jobs (const Detail& d1, const Detail& d2) {
 }
 
 int64_t Job_Shop_m_machines_n_jobs() {
-    int64_t time = 0;
-
-    for(int i = 1; i + 1 <= n; i += 2) {
-        auto d1 = ds[i], d2 = ds[i + 1];
-        Job_Shop_m_machines_2_jobs(d1, d2);
-    }
-
+    for(int i = 1; i + 1 <= n; i += 2)
+        Job_Shop_m_machines_2_jobs(ds[i], ds[i + 1]);
+    
     if(n % 2) {
         Detail dummy;
         dummy.k = 0;
