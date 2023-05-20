@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <limits>
 
+using namespace std;
+
 const size_t N = 3001, M = 301;
 
 struct Detail {
