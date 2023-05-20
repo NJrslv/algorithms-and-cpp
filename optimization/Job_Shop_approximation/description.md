@@ -18,3 +18,43 @@ Then output m lines, each containing n numbers.
 In the i-th line, the j-th number corresponds to the time when the i-th machine
 will start processing the j-th part, or it is 0 if the j-th part does not need to be processed on the i-th machine. 
 The time spent should not exceed the optimal time by more than `(n + 1) / 2` times.
+
+# Example
+`input.txt:`
+```
+5 5
+4
+1 10
+2 10
+3 10
+4 10
+4
+2 10
+3 10
+4 10
+5 10
+4
+3 10
+4 10
+5 10
+1 10
+4
+4 10
+5 10
+1 10
+2 10
+4
+5 10
+1 10
+2 10
+3 10
+```
+`output.txt:`
+```
+40
+0 0 30 20 10
+10 0 0 30 20
+20 10 0 0 30
+30 20 10 0 0
+0 30 20 10 0
+```
