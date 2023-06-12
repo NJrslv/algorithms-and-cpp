@@ -1,3 +1,14 @@
+/*
+You are given two arrays, sorted in non-decreasing order. Merge them into one sorted array.
+
+Input
+The first line contains integers 𝑛 and 𝑚, the sizes of the arrays (1≤𝑛,𝑚≤105). 
+The second line contains 𝑛 integers 𝑎𝑖, elements of the first array, 
+the third line contains 𝑚 integers 𝑏𝑖, elements of the second array (−109≤𝑎𝑖,𝑏𝑖≤109).
+
+Output
+Print 𝑛+𝑚 integers, the merged array.
+*/
 package main
  
 import (
