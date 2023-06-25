@@ -56,11 +56,7 @@ int64_t Job_Shop_m_machines_n_jobs() {
         Job_Shop_m_machines_2_jobs(ds[i], ds[i + 1]);
     
     if(n % 2) {
-        Detail dummy;
-        dummy.k = 0;
-        dummy.id = 0;
-        dummy.steps = {};
-        Job_Shop_m_machines_2_jobs(ds[n], dummy);
+        Job_Shop_m_machines_2_jobs(ds[n], Detail{0, 0, {}});
     }
 
     return *max_element(begin(load), end(load));
