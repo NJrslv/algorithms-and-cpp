@@ -68,7 +68,6 @@ func findStyleClothes(n1 int, n2 int, n3 int, n4 int) [4]int {
 	for l := 0; l < size; l++ {
 		for ; r < size && isSkipClothes(&packedClothes); r++ {
 			packedClothes[allClothes[r].t].Push(allClothes[r].c)
-			//r++
 		}
 
 		if allClothes[r-1].c-allClothes[l].c < styleIndex {
