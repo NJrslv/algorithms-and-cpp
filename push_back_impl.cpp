@@ -60,7 +60,7 @@ private:
             cap = newcap;
             arr = newarr;
         } else {
-            new(newarr + sz)T(std::forward<U>(value));
+            new(arr + sz)T(std::forward<U>(value));
         }
         sz++
     }
