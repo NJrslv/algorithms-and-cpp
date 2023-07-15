@@ -32,8 +32,8 @@ private:
             try {
                 for(; i < sz; ++i) {
                     // move конструктор может кинуть исключение => может быть 2 исключения.
-                    // поэтому move конструктор noexcept(false),
-                    // то мы будет просто копировать объект,
+                    // поэтому если move конструктор noexcept(false),
+                    // то мы будем просто копировать объект,
                     // для сохранения exception safety => move_if_noexcept
                     new(newarr + i)T(std::move_if_noexcept(arr[i]);
                 }
