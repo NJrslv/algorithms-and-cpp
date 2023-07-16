@@ -10,7 +10,7 @@ public:
         push_back_private(std::move(value));
     }
 private:
-    T* arr
+    T* arr;
     size_t sz;
     size_t cap;
     
@@ -35,7 +35,7 @@ private:
                     // поэтому если move конструктор noexcept(false),
                     // то мы будем просто копировать объект,
                     // для сохранения exception safety => move_if_noexcept
-                    new(newarr + i)T(std::move_if_noexcept(arr[i]);
+                    new(newarr + i)T(std::move_if_noexcept(arr[i]));
                 }
 
                 //Из-за этого места мы не можем выразить push_back через reserve,
