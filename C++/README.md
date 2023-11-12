@@ -15,3 +15,5 @@
   - [Boost: Intrusive and non-intrusive containers](https://www.boost.org/doc/libs/1_55_0/doc/html/intrusive/intrusive_vs_nontrusive.html)
 
   - [LWN: A futex overview](https://lwn.net/Articles/360699/)
+
+  - [Stackless coroutine theory](https://lewissbaker.github.io/2017/09/25/coroutine-theory)
