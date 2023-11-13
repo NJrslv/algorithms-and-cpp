@@ -11,6 +11,8 @@
   - [Erik Rigtorp modern cpp collection](https://github.com/rigtorp/awesome-modern-cpp)
   
   - [Correctly implementing a spinlock in C++ by rigtorp](https://rigtorp.se/spinlock/)
+
+  - [ELI: basic of futexes](https://eli.thegreenplace.net/2018/basics-of-futexes/)
     
   - [Boost: Intrusive and non-intrusive containers](https://www.boost.org/doc/libs/1_55_0/doc/html/intrusive/intrusive_vs_nontrusive.html)
 
