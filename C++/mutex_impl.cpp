@@ -25,6 +25,6 @@ public:
 private:
   // 0 - means unlocked.
   // 1 - means locked, no waiters.
-  // 2 - means locker, there are waiters.
+  // 2 - means locked, there are waiters.
   std::atomic<uint32_t> state_{0};
 };
