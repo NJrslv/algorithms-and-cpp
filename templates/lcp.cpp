@@ -1,9 +1,12 @@
 #include <algorithm>
 #include <iostream>
+#include <numeric>
 #include <vector>
 #include <string>
 #include <utility>
 #include <queue>
+#include <cstdint>
+#include <cmath>
 
 using namespace std;
 
@@ -13,6 +16,7 @@ using namespace std;
 using vi = vector<int>;
 using vvi = vector<vi>;
 using ii = pair<int, int>;
+using vii = vector<ii>;
 using ii64 = pair<int64_t, int64_t>;
 using vii = vector<ii>;
 using i64 = int64_t;
@@ -51,6 +55,25 @@ using max_heap = priority_queue<T, vector<T> >;
 
 template<class T, class Comparator>
 using comp_heap = priority_queue<T, std::vector<T>, Comparator>;
+
+struct sparse_tbl {
+    vvi st;
+
+    sparse_tbl(const vi& arr) {
+        st.resize(std::log2(sz(arr)) + 1, vi(sz(arr) + 1));
+        st[0] = arr;
+        for(int i = 1; i < sz(st); ++i)
+            for(int j = 0; j + (1 << i) <= sz(arr); ++j)
+                st[i][j] = min(st[i - 1][j], st[i - 1][j + (1 << (i - 1))]);
+    }
+
+    // [l, r]
+    int minimum(int l, int r) const {
+        int i = std::log2(r - l + 1);
+        return min(st[i][l], st[i][r - (1 << i) + 1]);
+    }
+
+};
 
 struct SuffArr {
     string s;
@@ -145,7 +168,6 @@ struct SuffArr {
         }
     }
 
-    // To do fast lcp use range sum on lcp array, for example sparse table(min for O(1)) or segtree.
     int slow_lcp(int i, int j) const {
         int start = inv[i], end = inv[j];
         if(start > end) swap(start, end);
@@ -156,6 +178,15 @@ struct SuffArr {
             res = min(res, lcp_arr[k]);
         return res;
     }
+
+    // Precondition: st is initialized with this->lcp_array.
+    int fast_lcp(int i, int j, const sparse_tbl& st) const {
+        if(i == j)
+            return sz(s) - i;
+        int start = inv[i], end = inv[j];
+        if(start > end) swap(start, end);
+        return st.minimum(start, end - 1);
+    }
 };
 
 int main() {
@@ -164,12 +195,34 @@ int main() {
 
     string s;
     cin >> s;
+    int n;
+    cin >> n;
+    vii strs(n);
+    for(auto& [l, r] : strs) {
+        cin >> l >> r;
+        --l, --r;
+    }
+
     s += ' ';
     SuffArr sa(s);
-    for(int el : sa.p)
-        cout << el << " ";
-    cout << "\n";
-    for(int el : sa.lcp_arr)
-        cout << el << " ";
+    sparse_tbl st(sa.lcp_arr);
+
+    auto order = [&sa, &s, &st](const auto& lStr, const auto& rStr) -> bool {
+        int l = sa.fast_lcp(lStr.first, rStr.first, st);
+        int szL = lStr.second - lStr.first + 1, szR = rStr.second - rStr.first + 1;
+        if(l >= min(szL, szR)) {
+            if(szL < szR)
+                return true;
+            if(szL == szR)
+                return lStr.first < rStr.first;
+            return false;
+        }
+        return s[lStr.first + l] < s[rStr.first + l];
+    };
+
+    sort(begin(strs), end(strs), order);
+    for(auto& [l, r] : strs)
+        cout << l + 1 << " " << r + 1 << "\n";
+
     return 0;
 }
