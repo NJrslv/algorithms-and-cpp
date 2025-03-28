@@ -1,246 +1,122 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
-#include <climits>
-#include <cmath>
-#include <numeric>
+#include <string>
+#include <utility>
+#include <queue>
+#include <functional>
 
 using namespace std;
 
-//on heap
+#define sz(a) int((a).size())
+#define rep(i, begin, end) for (__typeof(end) i = (begin) - ((begin) > (end)); i != (end) - ((begin) > (end)); i += 1 - 2 * ((begin) > (end)))
+
+using vi = vector<int>;
+using vvi = vector<vi>;
+using ii = pair<int, int>;
+using ii64 = pair<int64_t, int64_t>;
+using vii = vector<ii>;
+using i64 = int64_t;
+
+void __print(int x) {cerr << x;}
+void __print(long x) {cerr << x;}
+void __print(long long x) {cerr << x;}
+void __print(unsigned x) {cerr << x;}
+void __print(unsigned long x) {cerr << x;}
+void __print(unsigned long long x) {cerr << x;}
+void __print(float x) {cerr << x;}
+void __print(double x) {cerr << x;}
+void __print(long double x) {cerr << x;}
+void __print(char x) {cerr << '\'' << x << '\'';}
+void __print(const char *x) {cerr << '\"' << x << '\"';}
+void __print(const string &x) {cerr << '\"' << x << '\"';}
+void __print(bool x) {cerr << (x ? "true" : "false");}
+template<typename T, typename V>
+void __print(const pair<T, V> &x) {cerr << '{'; __print(x.first); cerr << ','; __print(x.second); cerr << '}';}
 template<typename T>
-class SegmentTree {
+void __print(const T &x) {int f = 0; cerr << '{'; for (auto &i: x) cerr << (f++ ? "," : ""), __print(i); cerr << "}";}
+void _print() {cerr << "]\n";}
+template <typename T, typename... V>
+void _print(T t, V... v) {__print(t); if (sizeof...(v)) cerr << ", "; _print(v...);}
+
+#ifndef ONLINE_JUDGE
+#define debug(x...) cerr << "[" << #x << "] = ["; _print(x)
+#else
+#define debug(x...)
+#endif
+template<class T>
+using min_heap = priority_queue<T, vector<T>, greater<T> >;
+
+template<class T>
+using max_heap = priority_queue<T, vector<T> >;
+
+template<class T, class Comparator>
+using comp_heap = priority_queue<T, std::vector<T>, Comparator>;
+
+uint32_t next_pow2(uint32_t n) {
+    if (n <= 1) return 1;
+    return 1 << (32 - __builtin_clz(n - 1));
+}
+
+template <typename T>
+class SGTree {
 public:
-    SegmentTree(const vector<T>& a) : n(a.size()) {
-        sum_tree.resize(4 * a.size());
-        min_tree.resize(4 * a.size());
-        max_tree.resize(4 * a.size());
-        added.resize(4 * a.size(), 0);
-        build(a, 1, 0, a.size() - 1);
+    // Starting index is 1.
+    SGTree(const vector<T>& v, function<T(T, T)> combinator, T neutral)
+    : n(next_pow2(sz(v))), zero(neutral), arr(2 * n, zero), f(combinator) {
+        copy(begin(v), end(v), begin(arr) + n);
+        for(int node = n - 1; node > 0; --node)
+            arr[node] = f(arr[node << 1], arr[node << 1 | 1]);
     }
 
-    void update(int index, T value) {
-        update(1, 0, n - 1, index, index, value);
+    void set(int node, const T& val) {
+        node += n;
+        arr[node] = val;
+        for(node = node >> 1; node > 0; node >>= 1)
+            arr[node] = f(arr[node << 1], arr[node << 1 | 1]);
     }
 
-    void add_range(int a, int b, T value) {
-        add_range(1, 0, n - 1, a, b, value);
-    }
-
-    T sum_range(int l, int r) {
-        return query_sum(1, 0, n - 1, l, r, 0);
-    }
-
-    T min_range(int l, int r) {
-        return query_min(1, 0, n - 1, l, r);
-    }
-
-    T max_range(int l, int r) {
-        return query_max(1, 0, n - 1, l, r);
-    }
-private:
-    int n;
-    vector<T> sum_tree;
-    vector<T> min_tree;
-    vector<T> max_tree;
-    vector<T> added;
-    
-    void build(const vector<T>& a, int node, int l, int r) {
-        if (l == r) {
-            sum_tree[node] = a[l];
-            min_tree[node] = a[l];
-            max_tree[node] = a[l];
-            return;
+    // [l, r)
+    // If l is odd, then it is the right child. So we don't want to include our parent.
+    // That is because the left border is l; if we include the parent node, it means that
+    // we also include its left child, but the left child has an index of l - 1, and we start from l.
+    // The same logic applies to the r index in case it is even (left child), note that r is not
+    // included so we are checking that r is odd => r - 1 is even.
+    T op(int l, int r) {
+        T res{};
+        for(l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if(l & 1) res = f(res, arr[l++]);
+            // r is not included, so prefix decrement.
+            if(r & 1) res = f(res, arr[--r]);
         }
-        int mid = (l + r) / 2;
-        build(a, 2 * node, l, mid);
-        build(a, 2 * node + 1, mid + 1, r);
-        sum_tree[node] = sum_tree[2 * node] + sum_tree[2 * node + 1];
-        min_tree[node] = min(min_tree[2 * node], min_tree[2 * node + 1]);
-        max_tree[node] = max(max_tree[2 * node], max_tree[2 * node + 1]);
-    }
-
-    //Getter for update operation
-    T crutch(int node, int nl, int nr, int i, T tmp) {
-        if(nl == i && i == nr) {
-            return tmp + added[node] + sum_tree[node];
-        }
-        int mid = (nl + nr) / 2;
-        if (i <= mid) {
-            return crutch(2 * node, nl, mid, i, tmp + added[node]);
-        } else {
-            return crutch(2 * node + 1, mid + 1, nr, i, tmp + added[node]);
-        } 
-    }
-    
-    void update(int node, int nl, int nr, int l, int r, T val) {
-        T el = crutch(1, nl, nr, r, 0);  // 1.getting el
-        el = (-1) * el;                  // 2.setting -el
-        add_range(1, nl, nr, l, r, el);  // 3.el - el = 0
-        add_range(1, nl, nr, l, r, val); // 4.0 + val = val
-    }
-
-    void add_range(int node, int nl, int nr, int l, int r, T val) {
-        if (l > r) {
-            return;
-        }
-        if (l == nl && nr == r) {
-            added[node] += val;
-            min_tree[node] += val;
-            max_tree[node] += val;
-            return;
-        }
-        int mid = (nl + nr) / 2;
-        add_range(2 * node, nl, mid, l, min(r, mid), val);
-        add_range(2 * node + 1, mid + 1, nr, max(l, mid + 1), r, val);
-        min_tree[node] = min(min_tree[2 * node], min_tree[2 * node + 1]) + added[node];
-        max_tree[node] = max(max_tree[2 * node], max_tree[2 * node + 1]) + added[node];
-        sum_tree[node] += (r - l + 1) * val;
-    }
-
-    T query_sum(int node, int nl, int nr, int l, int r, int tmp) {
-        if(l > r) {
-            return 0;
-        }
-        if (l == nl && r == nr) {
-            return (added[node] + tmp) * (r - l + 1) + sum_tree[node];
-        }
-        int mid = (nl + nr) / 2;
-        return (
-            query_sum(2 * node, nl, mid, l, min(r, mid), added[node] + tmp) +
-            query_sum(2 * node + 1, mid + 1, nr, max(mid + 1, l), r, added[node] + tmp)
-        );
-    }
-
-    T query_min(int node, int nl, int nr, int l, int r) {
-        if (l > r) {
-            return numeric_limits<T>::max();
-        }
-        if (l == nl && r == nr) {
-            return min_tree[node];
-        }
-        int mid = (nl + nr) / 2;
-        T min_left = query_min(2 * node, nl, mid, l, min(r, mid));
-        T min_right = query_min(2 * node + 1, mid + 1, nr, max(mid + 1, l), r);
-        return min(min_left, min_right) + added[node];
-    }
-
-    T query_max(int node, int nl, int nr, int l, int r) {
-        if (l > r) {
-            return numeric_limits<T>::min();
-        }
-        if (l == nl && r == nr) {
-            return max_tree[node];
-        }
-        int mid = nl + (nr - nl) / 2;
-        T max_left = query_max(2 * node, nl, mid, l, min(r, mid));
-        T max_right = query_max(2 * node + 1, mid + 1, nr, max(mid + 1, l), r);
-        return max(max_left, max_right) + added[node];
-    }
-};
-
-//on stack
-/*
-constexpr int N = 3e5 + 10;
-array<int, N> a; 
-array<int, 4 * N> min_tree, index_tree;
-
-class SegmentTree {
-public:
-    SegmentTree(int _n) : n(_n) {
-        build(1, 0, n - 1);
-    }
-
-    pair<int, int> min_range(int l, int r) {
-        return query_min(1, 0, n - 1, l, r);
-    }
-
-    void update_range(int l, int r, int v) {
-        update_range(1, 0, n - 1, l, r, v);
-    }
-
-    int get(int i) {
-        if (i < 0 || i >= n)
-            return INT_MAX;
-        int node = 1;
-        int nl = 0, nr = n - 1;
-        while (nl != nr) {
-            int mid = (nl + nr) / 2;
-            if (i <= mid) {
-                node = 2 * node;
-                nr = mid;
-            } else {
-                node = 2 * node + 1;
-                nl = mid + 1;
-            }
-        }
-        return min_tree[node];
+        return res;
     }
 
 private:
     int n;
-    
-    void build(int node, int l, int r) {
-        if (l == r) {
-            min_tree[node] = a[l];
-            index_tree[node] = l;
-            return;
-        }
-        int mid = (l + r) / 2;
-        build(2 * node, l, mid);
-        build(2 * node + 1, mid + 1, r);
-        if (min_tree[2 * node] <= min_tree[2 * node + 1]) {
-            min_tree[node] = min_tree[2 * node];
-            index_tree[node] = index_tree[2 * node];
-        } else {
-            min_tree[node] = min_tree[2 * node + 1];
-            index_tree[node] = index_tree[2 * node + 1];
-        }
-    }
-
-    pair<int, int> query_min(int node, int nl, int nr, int l, int r) {
-        if (l > r)
-            return make_pair(INT_MAX, -1);
-        if (l == nl && r == nr)
-            return make_pair(min_tree[node], index_tree[node]);
-        int mid = (nl + nr) / 2;
-        auto min_left = query_min(2 * node, nl, mid, l, min(r, mid));
-        auto min_right = query_min(2 * node + 1, mid + 1, nr, max(mid + 1, l), r);
-        if (min_left.first <= min_right.first)
-            return min_left;
-        else
-            return min_right;
-    }
-
-    void update_range(int node, int nl, int nr, int l, int r, int v) {
-        if (l > r) {
-            return;
-        }
-        if (nl == l && nr == r) {
-            min_tree[node] = v;
-            index_tree[node] = l;
-            return;
-        }
-        int mid = (nl + nr) / 2;
-        update_range(2 * node, nl, mid, l, min(mid, r), v);
-        update_range(2 * node + 1, mid + 1, nr, max(mid + 1, l), r, v);
-        if (min_tree[2 * node] <= min_tree[2 * node + 1]) {
-            min_tree[node] = min_tree[2 * node];
-            index_tree[node] = index_tree[2 * node];
-        } else {
-            min_tree[node] = min_tree[2 * node + 1];
-            index_tree[node] = index_tree[2 * node + 1];
-        }
-    }
+    T zero;
+    vector<T> arr;
+    function<T(T, T)> f;
 };
-*/
 
 int main() {
-    std::ios_base::sync_with_stdio(0);
-    //freopen("in.txt", "r", stdin);
-    //freopen("out.txt", "w", stdout);
-    std::cin.tie(0);
-    std::cout.tie(0);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
 
+    int n, m;
+    cin >> n >> m;
+    vector<i64> v(n);
+    for(i64& el : v)
+        cin >> el;
+
+    SGTree<i64> sgt(v, [](i64 a, i64 b) { return a + b; }, 0);
+    while(m--) {
+        int op, a, b;
+        cin >> op >> a >> b;
+        if(op == 1) sgt.set(a, b);
+        else cout << sgt.op(a, b) << '\n';
+    }
 
     return 0;
 }
