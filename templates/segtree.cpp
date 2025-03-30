@@ -63,7 +63,7 @@ class SGTree {
 public:
     // Starting index is 1.
     SGTree(const vector<T>& v, function<T(T, T)> combinator, T neutral)
-    : n(next_pow2(sz(v))), zero(neutral), arr(2 * n, zero), f(combinator) {
+    : n_in(sz(v)), n(next_pow2(sz(v))), zero(neutral), arr(2 * n, zero), f(combinator) {
         copy(begin(v), end(v), begin(arr) + n);
         for(int node = n - 1; node > 0; --node)
             arr[node] = f(arr[node << 1], arr[node << 1 | 1]);
@@ -104,7 +104,26 @@ public:
         return start - n;
     }
 
+    // Initially segtree on max.
+    int first_greater(int l, int r, T val, int invalid) {
+        function<int(int, int, int)> go
+            = [this, l, r, val, invalid, &go](int x, int lx, int rx) {
+            if (rx <= l || lx >= r)
+                return invalid;
+            if (rx - lx == 1)
+                return (lx < n_in && arr[x] >= val) ? lx : invalid;
+
+            int lChild = x << 1, rChild = x << 1 | 1, mid = (lx + rx) >> 1;
+            int res = arr[lChild] >= val ? go(lChild, lx, mid) : invalid;
+            if(res != invalid)
+                return res;
+            return arr[rChild] >= val ? go(rChild, mid, rx) : invalid;
+        };
+        return go(1, 0, n);
+    }
+
 private:
+    int n_in;
     int n;
     T zero;
     vector<T> arr;
