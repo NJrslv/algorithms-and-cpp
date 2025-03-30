@@ -91,6 +91,18 @@ public:
         }
         return res;
     }
+    
+    // Segtree on sum, ai in {0, 1}, find kth one.
+    T kthOne(int k) {
+        int start = 1;
+        while(start < n) {
+            int l = start << 1, r = l | 1;
+            bool goLeft = arr[l] > k;
+            k -= goLeft ? 0 : arr[l];
+            start = goLeft ? l : r;
+        }
+        return start - n;
+    }
 
 private:
     int n;
