@@ -92,6 +92,19 @@ public:
         return res;
     }
     
+    // Find product of matrices from [l to r).
+    T op_matmul(int l, int r) {
+        // Preserve order as matrix multiplication is not
+        // commutative operation.
+        // res_l * arr[l++] .... arr[--r] * res_r
+        T res_l = zero, res_r = zero;
+        for(l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if(l & 1) res_l = f(res_l, arr[l++]);
+            if(r & 1) res_r = f(arr[--r], res_r);
+        }
+        return f(res_l, res_r);
+    }
+    
     // Segtree on sum, ai in {0, 1}, find kth one.
     T kthOne(int k) {
         int start = 1;
@@ -100,6 +113,18 @@ public:
             bool goLeft = arr[l] > k;
             k -= goLeft ? 0 : arr[l];
             start = goLeft ? l : r;
+        }
+        return start - n;
+    }
+
+    // Segtree on sum, ai in {0, 1}, find kth one counting from the back.
+    T kthLastOne(int k) {
+        int start = 1;
+        while(start < n) {
+            int l = start << 1, r = l | 1;
+            bool goRight = arr[r] >= k;
+            k -= goRight ? 0 : arr[r];
+            start = goRight ? r : l;
         }
         return start - n;
     }
