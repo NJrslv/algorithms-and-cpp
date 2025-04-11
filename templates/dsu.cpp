@@ -1,38 +1,62 @@
 #include <iostream>
-#include <fstream>
+#include <numeric>
 #include <vector>
-#include <array>
+#include <string>
+#include <utility>
 
 using namespace std;
 
-constexpr int N = 1e5;
-int _size[N], _parent[N];
+#define sz(a) int((a).size())
 
-void DSU_make(int x) {
-	_parent[x] = x;
-	_size[x] = 1;
-}
+using vi = vector<int>;
+using vvi = vector<vi>;
+using ii = pair<int, int>;
+using ii64 = pair<int64_t, int64_t>;
+using vii = vector<ii>;
+using i64 = int64_t;
 
-int DSU_find(int x) {
-    return _parent[x] == x ? x : _parent[x] = DSU_find(_parent[x]);
-}
+struct DSU {
+    DSU(int n) {
+        p.resize(n);
+        iota(begin(p), end(p), 0);
+        sz.resize(n, 1);
+    }
 
-void DSU_union(int a, int b) {
-	a = DSU_find(a);
-	b = DSU_find(b);
-	if (a != b) {
-		if(_size[a] < _size[b])
-			std::swap(a, b);
-		_parent[b] = a;
-		_size[a] += _size[b];
-	}
+    int find(int a) {
+        return p[a] == a ? a : p[a] = find(p[a]);
+    }
+
+    void merge(int a, int b) {
+        a = find(a), b = find(b);
+        if(a != b) {
+            if(sz[a] > sz[b])
+                swap(a, b);
+            p[a] = p[b];
+            sz[b] += sz[a];
+        }
+    }
+    vi p, sz;
+};
+
+struct Edge {
+    int b, e, w;
+};
+
+i64 kruskal(vector<Edge>& e, int n) {
+    sort(begin(e), end(e), [](const auto& l, const auto& r) {
+        return l.w < r.w;
+    });
+    DSU dsu(n);
+    i64 W = 0;
+    for(const auto& [b, e, w] : e)
+        if(dsu.find(b) != dsu.find(e))
+           W += w, dsu.merge(b, e);
+    return W;
 }
 
 int main() {
-    std::ios_base::sync_with_stdio(0);
-    //freopen("input.txt", "r", stdin);
-    //freopen("output.txt", "w", stdout);
-    std::cin.tie(0);
-    std::cout.tie(0);
-     
+    cin.tie(0)->sync_with_stdio(0);
+
+    return 0;
 }
+
