@@ -54,6 +54,46 @@ i64 kruskal(vector<Edge>& e, int n) {
     return W;
 }
 
+// Online bipartite graph check using DSU with partity marks.
+struct DSU {
+    vector<pair<int, int>> p;
+    vector<int> sz;
+    vector<bool> bipartite;
+
+    DSU(int n) {
+        p.resize(n);
+        sz.resize(n, 1);
+        bipartite.resize(n, true);
+        for(int i = 0; i < n; ++i)
+            p[i] = {i, 0};
+    }
+
+    pair<int, int> find(int a) {
+        if(p[a].first != a) {
+            auto [r, parity] = find(p[a].first);
+            p[a].second = (p[a].second + parity) % 2;
+            p[a].first = r;
+        }
+        return p[a];
+    }
+
+    void merge(int a, int b) {
+        auto [ra, pa] = find(a);
+        auto [rb, pb] = find(b);
+        if(ra == rb) {
+            bipartite[ra] = pa != pb;
+        } else {
+            if(sz[ra] > sz[rb])
+                swap(ra, rb), swap(pa, pb);
+            // We join ra to rb, inital path from ra to rb as follows:
+            // ra -> a -> b -> rb ~ pa(ra->a) + 1(a->b) + pb(b->rb).
+            p[ra] = {rb, (pa + pb + 1) % 2};
+            sz[rb] += sz[ra];
+            bipartite[rb] = bipartite[rb] & bipartite[ra];
+        }
+    }
+};
+
 int main() {
     cin.tie(0)->sync_with_stdio(0);
 
